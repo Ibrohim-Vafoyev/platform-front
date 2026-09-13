@@ -3,17 +3,18 @@ export default function ModuleList({
   activeModuleId,
   onSelectModule,
   moduleStatuses,
+  t,
 }) {
   return (
     <aside className="module-list-panel">
       <div className="module-list-header">
-        <h2 className="panel-title">Модули инкубатора</h2>
-        <span className="modules-count-badge">{modules.length} модуль</span>
+        <h2 className="panel-title">{t.modulesTitle}</h2>
+        <span className="modules-count-badge">
+          {modules.length} {t.modulesCountSuffix}
+        </span>
       </div>
 
-      <p className="module-list-subtitle">
-        Заполняйте модули шаг за шагом. Ваши ответы автоматически сформируют One-Pager.
-      </p>
+      <p className="module-list-subtitle">{t.modulesSubtitle}</p>
 
       <div className="module-items">
         {modules.map((mod, index) => {
@@ -26,18 +27,22 @@ export default function ModuleList({
           const isActive = mod.id === activeModuleId;
 
           let badgeClass = 'status-not-started';
-          let badgeText = 'Не начат';
+          let badgeText = t.statusNotStarted;
           let statusIcon = '○';
 
           if (statusInfo.status === 'completed') {
             badgeClass = 'status-completed';
-            badgeText = 'Заполнен';
+            badgeText = t.statusCompleted;
             statusIcon = '✓';
           } else if (statusInfo.status === 'in_progress') {
             badgeClass = 'status-in-progress';
-            badgeText = 'В процессе';
+            badgeText = t.statusInProgress;
             statusIcon = '◐';
           }
+
+          const countText = t.answersCount
+            .replace('{filled}', statusInfo.filledCount)
+            .replace('{total}', statusInfo.totalFields);
 
           return (
             <div
@@ -53,7 +58,9 @@ export default function ModuleList({
               }}
             >
               <div className="module-card-top">
-                <span className="module-index-badge">Модуль {index + 1}</span>
+                <span className="module-index-badge">
+                  {t.moduleIndexPrefix} {index + 1}
+                </span>
                 <span className={`status-pill ${badgeClass}`}>
                   <span className="status-dot">{statusIcon}</span>
                   {badgeText}
@@ -66,11 +73,9 @@ export default function ModuleList({
               )}
 
               <div className="module-card-footer">
-                <span className="fields-stat">
-                  {statusInfo.filledCount} из {statusInfo.totalFields} ответов
-                </span>
+                <span className="fields-stat">{countText}</span>
                 <span className="action-hint">
-                  {isActive ? 'Открыт ▸' : 'Редактировать →'}
+                  {isActive ? t.openAction : t.editAction}
                 </span>
               </div>
 

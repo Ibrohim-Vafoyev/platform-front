@@ -3,7 +3,8 @@ import Header from './components/Header';
 import ModuleList from './components/ModuleList';
 import ModuleForm from './components/ModuleForm';
 import OnePagerView from './components/OnePagerView';
-import { INCUBATOR_MODULES } from './data/modules';
+import { getLocalizedModules } from './data/modules';
+import { TRANSLATIONS } from './data/translations';
 import {
   getStoredProjects,
   getActiveProjectId,
@@ -12,16 +13,29 @@ import {
   createNewProject,
   resetStorageToSeed,
   getProjectProgress,
+  getStoredLanguage,
+  saveStoredLanguage,
 } from './utils/storage';
 import './App.css';
 
 export default function App() {
+  const [lang, setLang] = useState(() => getStoredLanguage());
   const [projects, setProjects] = useState(() => getStoredProjects());
   const [activeProjectId, setActiveProjId] = useState(() =>
     getActiveProjectId(projects)
   );
   const [activeTab, setActiveTab] = useState('modules'); // 'modules' | 'onepager'
-  const [activeModuleId, setActiveModuleId] = useState(INCUBATOR_MODULES[0].id);
+  const [activeModuleId, setActiveModuleId] = useState('problem_audience');
+
+  // Translation dictionary for active language
+  const t = useMemo(() => {
+    return TRANSLATIONS[lang] || TRANSLATIONS.uz;
+  }, [lang]);
+
+  // Localized modules list for active language
+  const modules = useMemo(() => {
+    return getLocalizedModules(lang);
+  }, [lang]);
 
   // Active project memoized
   const activeProject = useMemo(() => {
@@ -30,21 +44,26 @@ export default function App() {
 
   // Progress metrics memoized
   const progress = useMemo(() => {
-    return getProjectProgress(activeProject, INCUBATOR_MODULES);
-  }, [activeProject]);
+    return getProjectProgress(activeProject, modules);
+  }, [activeProject, modules]);
 
   // Active module configuration
   const activeModule = useMemo(() => {
     return (
-      INCUBATOR_MODULES.find((m) => m.id === activeModuleId) ||
-      INCUBATOR_MODULES[0]
+      modules.find((m) => m.id === activeModuleId) ||
+      modules[0]
     );
-  }, [activeModuleId]);
+  }, [modules, activeModuleId]);
 
   // Active module saved answers
   const activeModuleAnswers = useMemo(() => {
     return activeProject?.answers?.[activeModule.id] || {};
   }, [activeProject, activeModule.id]);
+
+  const handleSelectLanguage = (newLang) => {
+    setLang(newLang);
+    saveStoredLanguage(newLang);
+  };
 
   const handleSelectProject = (id) => {
     setActiveProjId(id);
@@ -59,11 +78,7 @@ export default function App() {
   };
 
   const handleResetDemo = () => {
-    if (
-      window.confirm(
-        'Сбросить данные к исходным демо-проектам (AgroPulse AI и Черновик)? Все несохранённые изменения будут сброшены.'
-      )
-    ) {
+    if (window.confirm(t.resetConfirm)) {
       const { projects: seedProjects, activeId } = resetStorageToSeed();
       setProjects(seedProjects);
       setActiveProjId(activeId);
@@ -96,33 +111,40 @@ export default function App() {
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         progress={progress}
+        lang={lang}
+        onSelectLanguage={handleSelectLanguage}
+        t={t}
       />
 
       <main className="app-main-content">
         {activeTab === 'modules' ? (
           <div className="modules-view-container">
             <ModuleList
-              modules={INCUBATOR_MODULES}
+              modules={modules}
               activeModuleId={activeModuleId}
               onSelectModule={setActiveModuleId}
               moduleStatuses={progress.moduleStatuses}
+              t={t}
             />
 
             <section className="module-workspace">
               <ModuleForm
-                key={`${activeProject?.id}_${activeModule.id}`}
+                key={`${activeProject?.id}_${activeModule.id}_${lang}`}
                 module={activeModule}
                 currentAnswers={activeModuleAnswers}
                 onSave={handleSaveModuleAnswers}
                 onGoToOnePager={() => setActiveTab('onepager')}
+                t={t}
               />
             </section>
           </div>
         ) : (
           <OnePagerView
             project={activeProject}
-            modules={INCUBATOR_MODULES}
+            modules={modules}
             onEditModule={handleEditModuleFromOnePager}
+            t={t}
+            lang={lang}
           />
         )}
       </main>

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { LANGUAGES } from '../data/translations';
 
 export default function Header({
   projects,
@@ -9,10 +10,27 @@ export default function Header({
   activeTab,
   onSelectTab,
   progress,
+  lang,
+  onSelectLanguage,
+  t,
 }) {
   const [showNewModal, setShowNewModal] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
   const [newName, setNewName] = useState('');
   const [newTagline, setNewTagline] = useState('');
+
+  const langMenuRef = useRef(null);
+
+  // Close language dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target)) {
+        setShowLangMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleCreateSubmit = (e) => {
     e.preventDefault();
@@ -23,6 +41,8 @@ export default function Header({
     setShowNewModal(false);
   };
 
+  const currentLang = LANGUAGES.find((l) => l.code === lang) || LANGUAGES[0];
+
   return (
     <header className="app-header">
       <div className="header-top">
@@ -31,43 +51,80 @@ export default function Header({
             <span className="logo-icon">🚀</span>
             <span className="logo-text">IncubatorOS</span>
           </div>
-          <span className="tournament-tag">Vibe Coding Tournament MVP</span>
+          <span className="tournament-tag">{t.brandTag}</span>
         </div>
 
-        <div className="project-switcher-group">
-          <label htmlFor="project-select" className="project-label">
-            Проект:
-          </label>
-          <select
-            id="project-select"
-            className="project-select"
-            value={activeProject?.id || ''}
-            onChange={(e) => onSelectProject(e.target.value)}
-          >
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} {p.answers && Object.keys(p.answers).length === 0 ? '(Пустой)' : ''}
-              </option>
-            ))}
-          </select>
+        <div className="header-actions-cluster">
+          {/* Language Switcher Dropdown */}
+          <div className="lang-dropdown-wrapper" ref={langMenuRef}>
+            <button
+              type="button"
+              className="btn btn-secondary lang-dropdown-toggle"
+              onClick={() => setShowLangMenu((prev) => !prev)}
+              aria-expanded={showLangMenu}
+              aria-label="Tanlangan til"
+            >
+              <span className="lang-flag">{currentLang.flag}</span>
+              <span className="lang-name">{currentLang.label}</span>
+              <span className="dropdown-caret">▾</span>
+            </button>
 
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => setShowNewModal(true)}
-            title="Создать новый проект"
-          >
-            + Новый проект
-          </button>
+            {showLangMenu && (
+              <div className="lang-dropdown-menu">
+                {LANGUAGES.map((item) => (
+                  <button
+                    key={item.code}
+                    type="button"
+                    className={`lang-menu-item ${item.code === lang ? 'active' : ''}`}
+                    onClick={() => {
+                      onSelectLanguage(item.code);
+                      setShowLangMenu(false);
+                    }}
+                  >
+                    <span className="lang-menu-flag">{item.flag}</span>
+                    <span className="lang-menu-label">{item.label}</span>
+                    {item.code === lang && <span className="lang-active-check">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={onResetDemo}
-            title="Восстановить исходные демо-проекты"
-          >
-            ↺ Демо-данные
-          </button>
+          <div className="project-switcher-group">
+            <label htmlFor="project-select" className="project-label">
+              {t.projectLabel}
+            </label>
+            <select
+              id="project-select"
+              className="project-select"
+              value={activeProject?.id || ''}
+              onChange={(e) => onSelectProject(e.target.value)}
+            >
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} {p.answers && Object.keys(p.answers).length === 0 ? t.emptyTag : ''}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => setShowNewModal(true)}
+              title={t.newProject}
+            >
+              {t.newProject}
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={onResetDemo}
+              title={t.resetDemo}
+            >
+              {t.resetDemo}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -79,7 +136,7 @@ export default function Header({
             onClick={() => onSelectTab('modules')}
           >
             <span className="tab-icon">📋</span>
-            <span>Модули акселератора</span>
+            <span>{t.tabModules}</span>
             <span className="tab-count-badge">
               {progress.completedCount}/{progress.totalCount}
             </span>
@@ -91,18 +148,18 @@ export default function Header({
             onClick={() => onSelectTab('onepager')}
           >
             <span className="tab-icon">📄</span>
-            <span>One-Pager проекта</span>
+            <span>{t.tabOnePager}</span>
             {progress.completedCount > 0 ? (
-              <span className="tab-status-pill ready">Готов к показу</span>
+              <span className="tab-status-pill ready">{t.statusReady}</span>
             ) : (
-              <span className="tab-status-pill pending">Черновик</span>
+              <span className="tab-status-pill pending">{t.statusDraft}</span>
             )}
           </button>
         </nav>
 
         <div className="header-progress-summary">
           <div className="progress-info">
-            <span className="progress-label">Готовность One-Pager:</span>
+            <span className="progress-label">{t.readiness}</span>
             <span className="progress-val">{progress.percent}%</span>
           </div>
           <div className="progress-bar-track">
@@ -118,7 +175,7 @@ export default function Header({
         <div className="modal-backdrop" onClick={() => setShowNewModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Создать новый проект</h3>
+              <h3>{t.modalTitle}</h3>
               <button
                 type="button"
                 className="close-btn"
@@ -129,12 +186,12 @@ export default function Header({
             </div>
             <form onSubmit={handleCreateSubmit}>
               <div className="form-group">
-                <label htmlFor="new-proj-name">Название проекта *</label>
+                <label htmlFor="new-proj-name">{t.projectNameLabel}</label>
                 <input
                   id="new-proj-name"
                   type="text"
                   className="form-input"
-                  placeholder="например: MedBot, AgroAI, FinPulse..."
+                  placeholder={t.projectNamePlaceholder}
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   autoFocus
@@ -142,12 +199,12 @@ export default function Header({
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="new-proj-tagline">Краткое описание (tagline)</label>
+                <label htmlFor="new-proj-tagline">{t.projectTaglineLabel}</label>
                 <input
                   id="new-proj-tagline"
                   type="text"
                   className="form-input"
-                  placeholder="например: Платформа предиктивной аналитики для..."
+                  placeholder={t.projectTaglinePlaceholder}
                   value={newTagline}
                   onChange={(e) => setNewTagline(e.target.value)}
                 />
@@ -158,10 +215,10 @@ export default function Header({
                   className="btn btn-ghost"
                   onClick={() => setShowNewModal(false)}
                 >
-                  Отмена
+                  {t.cancelBtn}
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  Создать
+                  {t.createBtn}
                 </button>
               </div>
             </form>

@@ -4,13 +4,15 @@ export default function OnePagerView({
   project,
   modules,
   onEditModule,
+  t,
+  lang,
 }) {
   const [copied, setCopied] = useState(false);
 
   if (!project) {
     return (
       <div className="onepager-empty-state">
-        <p>Проект не выбран</p>
+        <p>{t.noProjectSelected}</p>
       </div>
     );
   }
@@ -36,7 +38,7 @@ export default function OnePagerView({
       });
 
       if (!hasContent) {
-        fullText += `[Раздел не заполнен]\n\n`;
+        fullText += `[${t.emptySectionTitle}]\n\n`;
       }
     });
 
@@ -46,21 +48,28 @@ export default function OnePagerView({
     });
   };
 
+  const localeMap = {
+    uz: 'uz-UZ',
+    ru: 'ru-RU',
+    en: 'en-US',
+  };
+
+  const formattedDate = project.updatedAt
+    ? new Date(project.updatedAt).toLocaleDateString(localeMap[lang] || 'ru-RU', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : t.justNow;
+
   return (
     <div className="onepager-wrapper">
       <div className="onepager-toolbar">
         <div className="toolbar-info">
-          <span className="live-badge">● Live автосборка из модулей</span>
+          <span className="live-badge">{t.liveAutoAssembly}</span>
           <span className="updated-timestamp">
-            Обновлено:{' '}
-            {project.updatedAt
-              ? new Date(project.updatedAt).toLocaleDateString('ru-RU', {
-                  day: 'numeric',
-                  month: 'short',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-              : 'Только что'}
+            {t.updatedAt} {formattedDate}
           </span>
         </div>
 
@@ -70,7 +79,7 @@ export default function OnePagerView({
             className="btn btn-secondary btn-sm"
             onClick={handleCopyText}
           >
-            {copied ? '✓ Скопировано в буфер!' : '📋 Копировать One-Pager'}
+            {copied ? t.copiedSuccess : t.copyOnePager}
           </button>
         </div>
       </div>
@@ -78,13 +87,13 @@ export default function OnePagerView({
       <article className="onepager-sheet">
         <header className="onepager-header">
           <div className="onepager-header-top">
-            <span className="memo-tag">Startup Executive One-Pager</span>
+            <span className="memo-tag">{t.executiveTag}</span>
             <span className="project-id-chip">ID: {project.id}</span>
           </div>
 
           <h1 className="onepager-title">{project.name}</h1>
           <p className="onepager-tagline">
-            {project.tagline || 'Проект инкубационной программы (описание не указано)'}
+            {project.tagline || t.noTaglineProvided}
           </p>
         </header>
 
@@ -109,29 +118,26 @@ export default function OnePagerView({
                     type="button"
                     className="edit-section-link"
                     onClick={() => onEditModule(mod.id)}
-                    title="Перейти к редактированию модуля"
+                    title={t.editSection}
                   >
-                    ✏ Редактировать
+                    {t.editSection}
                   </button>
                 </div>
 
                 {isModuleCompletelyEmpty ? (
-                  /* CRITICAL: Non-breaking graceful Empty Section state */
+                  /* Non-breaking graceful Empty Section state */
                   <div className="onepager-empty-section">
                     <div className="empty-section-icon">📝</div>
                     <div className="empty-section-body">
-                      <h4 className="empty-section-title">Раздел пока не заполнен</h4>
-                      <p className="empty-section-text">
-                        Ответы по этому модулю ещё не внесены командой. Заполните форму в
-                        модуле, чтобы сгенерировать этот раздел One-Pager.
-                      </p>
+                      <h3 className="empty-section-title">{t.emptySectionTitle}</h3>
+                      <p className="empty-section-text">{t.emptySectionText}</p>
                     </div>
                     <button
                       type="button"
                       className="btn btn-primary btn-sm"
                       onClick={() => onEditModule(mod.id)}
                     >
-                      Заполнить модуль →
+                      {t.fillModuleBtn}
                     </button>
                   </div>
                 ) : (
@@ -143,7 +149,7 @@ export default function OnePagerView({
 
                       return (
                         <div key={field.id} className="onepager-field-block">
-                          <h3 className="onepager-field-question">{field.label}</h3>
+                          <h4 className="onepager-field-question">{field.label}</h4>
                           {hasValue ? (
                             <div className="onepager-field-answer">
                               {answerValue.split('\n').map((para, pIdx) => (
@@ -152,7 +158,7 @@ export default function OnePagerView({
                             </div>
                           ) : (
                             <div className="onepager-field-placeholder">
-                              <em>[Ответ на этот вопрос ещё не внесён]</em>
+                              <em>{t.emptyFieldNotice}</em>
                             </div>
                           )}
                         </div>
@@ -167,9 +173,9 @@ export default function OnePagerView({
 
         <footer className="onepager-footer">
           <div className="footer-legend">
-            <span>Сформировано автоматически платформой IncubatorOS</span>
+            <span>{t.autoGeneratedNotice}</span>
             <span>•</span>
-            <span>Без ручной верстки</span>
+            <span>{t.noManualLayout}</span>
           </div>
         </footer>
       </article>

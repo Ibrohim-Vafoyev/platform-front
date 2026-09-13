@@ -2,6 +2,33 @@ import { INCUBATOR_MODULES } from '../data/modules.js';
 
 const STORAGE_KEY_PROJECTS = 'incubator_platform_projects';
 const STORAGE_KEY_ACTIVE_ID = 'incubator_platform_active_project_id';
+const STORAGE_KEY_LANG = 'incubator_platform_language';
+
+/**
+ * Gets saved language or defaults to 'uz'
+ */
+export function getStoredLanguage() {
+  try {
+    const lang = localStorage.getItem(STORAGE_KEY_LANG);
+    if (lang && ['uz', 'ru', 'en'].includes(lang)) {
+      return lang;
+    }
+    return 'uz';
+  } catch {
+    return 'uz';
+  }
+}
+
+/**
+ * Persists language choice to localStorage
+ */
+export function saveStoredLanguage(lang) {
+  try {
+    localStorage.setItem(STORAGE_KEY_LANG, lang);
+  } catch (err) {
+    console.error('Failed to save language to localStorage:', err);
+  }
+}
 
 export const SEED_PROJECTS = [
   {

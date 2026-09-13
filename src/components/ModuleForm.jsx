@@ -5,6 +5,7 @@ export default function ModuleForm({
   currentAnswers = {},
   onSave,
   onGoToOnePager,
+  t,
 }) {
   const [formData, setFormData] = useState(() => {
     const initial = {};
@@ -39,15 +40,17 @@ export default function ModuleForm({
     (f) => (formData[f.id] || '').trim().length > 0
   ).length;
 
+  const answeredFieldsText = t.answeredFieldsPill
+    .replace('{filled}', filledCount)
+    .replace('{total}', module.fields.length);
+
   return (
     <div className="module-form-container">
       <div className="module-form-header">
         <div>
           <div className="module-tag-row">
-            <span className="badge-tag">Модуль программы</span>
-            <span className="fields-count-pill">
-              Заполнено {filledCount} из {module.fields.length} вопросов
-            </span>
+            <span className="badge-tag">{t.programModuleTag}</span>
+            <span className="fields-count-pill">{answeredFieldsText}</span>
           </div>
           <h2 className="form-title">{module.title}</h2>
           {module.subtitle && <p className="form-subtitle">{module.subtitle}</p>}
@@ -58,15 +61,15 @@ export default function ModuleForm({
         <div className="alert-toast success">
           <span className="alert-icon">✓</span>
           <div className="alert-content">
-            <strong>Ответы сохранены в localStorage!</strong>
-            <span>One-Pager автоматически обновлен в реальном времени.</span>
+            <strong>{t.saveSuccessTitle}</strong>
+            <span>{t.saveSuccessSubtitle}</span>
           </div>
           <button
             type="button"
             className="btn btn-sm btn-outline-white"
             onClick={onGoToOnePager}
           >
-            Открыть One-Pager →
+            {t.openOnePagerBtn}
           </button>
         </div>
       )}
@@ -84,7 +87,9 @@ export default function ModuleForm({
                   <label htmlFor={`field-${field.id}`} className="field-label">
                     {field.label}
                   </label>
-                  {isFilled && <span className="field-check-badge">Заполнено</span>}
+                  {isFilled && (
+                    <span className="field-check-badge">{t.fieldFilledBadge}</span>
+                  )}
                 </div>
 
                 <div className="input-wrapper">
@@ -105,9 +110,9 @@ export default function ModuleForm({
         <div className="form-actions-bar">
           <div className="actions-info">
             {hasChanges ? (
-              <span className="unsaved-indicator">● Есть несохранённые изменения</span>
+              <span className="unsaved-indicator">{t.hasUnsavedChanges}</span>
             ) : (
-              <span className="saved-indicator">✓ Все изменения сохранены</span>
+              <span className="saved-indicator">{t.allChangesSaved}</span>
             )}
           </div>
 
@@ -116,12 +121,12 @@ export default function ModuleForm({
               type="button"
               className="btn btn-ghost"
               onClick={onGoToOnePager}
-              title="Перейти к просмотру сводки"
+              title={t.viewOnePagerBtn}
             >
-              Смотреть One-Pager
+              {t.viewOnePagerBtn}
             </button>
             <button type="submit" className="btn btn-primary btn-lg">
-              Сохранить ответы
+              {t.saveAnswersBtn}
             </button>
           </div>
         </div>
