@@ -1,5 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { LANGUAGES } from '../data/translations';
+import {
+  RocketIcon,
+  PlusIcon,
+  RefreshIcon,
+  ClipboardListIcon,
+  FileTextIcon,
+  CheckIcon,
+} from './Icons';
 
 export default function Header({
   projects,
@@ -21,7 +29,6 @@ export default function Header({
 
   const langMenuRef = useRef(null);
 
-  // Close language dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e) {
       if (langMenuRef.current && !langMenuRef.current.contains(e.target)) {
@@ -48,7 +55,9 @@ export default function Header({
       <div className="header-top">
         <div className="brand-group">
           <div className="logo-badge">
-            <span className="logo-icon">🚀</span>
+            <span className="logo-icon-svg">
+              <RocketIcon size={20} />
+            </span>
             <span className="logo-text">IncubatorOS</span>
           </div>
           <span className="tournament-tag">{t.brandTag}</span>
@@ -83,7 +92,11 @@ export default function Header({
                   >
                     <span className="lang-menu-flag">{item.flag}</span>
                     <span className="lang-menu-label">{item.label}</span>
-                    {item.code === lang && <span className="lang-active-check">✓</span>}
+                    {item.code === lang && (
+                      <span className="lang-active-check">
+                        <CheckIcon size={14} />
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -113,7 +126,8 @@ export default function Header({
               onClick={() => setShowNewModal(true)}
               title={t.newProject}
             >
-              {t.newProject}
+              <PlusIcon size={14} />
+              <span>{t.newProject}</span>
             </button>
 
             <button
@@ -122,7 +136,8 @@ export default function Header({
               onClick={onResetDemo}
               title={t.resetDemo}
             >
-              {t.resetDemo}
+              <RefreshIcon size={13} />
+              <span>{t.resetDemo}</span>
             </button>
           </div>
         </div>
@@ -135,7 +150,9 @@ export default function Header({
             className={`tab-btn ${activeTab === 'modules' ? 'active' : ''}`}
             onClick={() => onSelectTab('modules')}
           >
-            <span className="tab-icon">📋</span>
+            <span className="tab-icon-svg">
+              <ClipboardListIcon size={16} />
+            </span>
             <span>{t.tabModules}</span>
             <span className="tab-count-badge">
               {progress.completedCount}/{progress.totalCount}
@@ -147,7 +164,9 @@ export default function Header({
             className={`tab-btn ${activeTab === 'onepager' ? 'active' : ''}`}
             onClick={() => onSelectTab('onepager')}
           >
-            <span className="tab-icon">📄</span>
+            <span className="tab-icon-svg">
+              <FileTextIcon size={16} />
+            </span>
             <span>{t.tabOnePager}</span>
             {progress.completedCount > 0 ? (
               <span className="tab-status-pill ready">{t.statusReady}</span>

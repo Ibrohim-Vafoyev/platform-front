@@ -1,6 +1,13 @@
 import { useState, useRef } from 'react';
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
+import {
+  CopyIcon,
+  DownloadIcon,
+  EditIcon,
+  NoteEmptyIcon,
+  CheckIcon,
+} from './Icons';
 
 export default function OnePagerView({
   project,
@@ -64,7 +71,6 @@ export default function OnePagerView({
         pixelRatio: 2,
         backgroundColor: '#141a26',
         filter: (node) => {
-          // Exclude edit buttons from exported PDF
           return !node.classList?.contains('edit-section-link');
         },
       });
@@ -135,7 +141,10 @@ export default function OnePagerView({
     <div className="onepager-wrapper">
       <div className="onepager-toolbar">
         <div className="toolbar-info">
-          <span className="live-badge">{t.liveAutoAssembly}</span>
+          <span className="live-badge">
+            <span className="pulsing-live-dot" />
+            {t.liveAutoAssembly}
+          </span>
           <span className="updated-timestamp">
             {t.updatedAt} {formattedDate}
           </span>
@@ -148,7 +157,8 @@ export default function OnePagerView({
             onClick={handleCopyText}
             title={t.copyOnePager}
           >
-            {copied ? t.copiedSuccess : t.copyOnePager}
+            {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
+            <span>{copied ? t.copiedSuccess : t.copyOnePager}</span>
           </button>
 
           <button
@@ -158,7 +168,8 @@ export default function OnePagerView({
             disabled={isGeneratingPdf}
             title={t.downloadPdf}
           >
-            {isGeneratingPdf ? t.generatingPdf : t.downloadPdf}
+            <DownloadIcon size={14} />
+            <span>{isGeneratingPdf ? t.generatingPdf : t.downloadPdf}</span>
           </button>
         </div>
       </div>
@@ -196,17 +207,21 @@ export default function OnePagerView({
                   <button
                     type="button"
                     className="edit-section-link"
+                    data-html2canvas-ignore="true"
                     onClick={() => onEditModule(mod.id)}
                     title={t.editSection}
                   >
-                    {t.editSection}
+                    <EditIcon size={13} />
+                    <span>{t.editSection}</span>
                   </button>
                 </div>
 
                 {isModuleCompletelyEmpty ? (
                   /* Non-breaking graceful Empty Section state */
                   <div className="onepager-empty-section">
-                    <div className="empty-section-icon">📝</div>
+                    <div className="empty-section-icon">
+                      <NoteEmptyIcon size={30} />
+                    </div>
                     <div className="empty-section-body">
                       <h3 className="empty-section-title">{t.emptySectionTitle}</h3>
                       <p className="empty-section-text">{t.emptySectionText}</p>
@@ -214,6 +229,7 @@ export default function OnePagerView({
                     <button
                       type="button"
                       className="btn btn-primary btn-sm"
+                      data-html2canvas-ignore="true"
                       onClick={() => onEditModule(mod.id)}
                     >
                       {t.fillModuleBtn}

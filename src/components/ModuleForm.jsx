@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CheckIcon } from './Icons';
 
 export default function ModuleForm({
   module,
@@ -59,7 +60,9 @@ export default function ModuleForm({
 
       {saveSuccess && (
         <div className="alert-toast success">
-          <span className="alert-icon">✓</span>
+          <span className="alert-icon-svg">
+            <CheckIcon size={18} />
+          </span>
           <div className="alert-content">
             <strong>{t.saveSuccessTitle}</strong>
             <span>{t.saveSuccessSubtitle}</span>
@@ -88,7 +91,10 @@ export default function ModuleForm({
                     {field.label}
                   </label>
                   {isFilled && (
-                    <span className="field-check-badge">{t.fieldFilledBadge}</span>
+                    <span className="field-check-badge">
+                      <CheckIcon size={12} />
+                      <span>{t.fieldFilledBadge}</span>
+                    </span>
                   )}
                 </div>
 
@@ -112,7 +118,10 @@ export default function ModuleForm({
             {hasChanges ? (
               <span className="unsaved-indicator">{t.hasUnsavedChanges}</span>
             ) : (
-              <span className="saved-indicator">{t.allChangesSaved}</span>
+              <span className="saved-indicator">
+                <CheckIcon size={14} />
+                <span>{t.allChangesSaved}</span>
+              </span>
             )}
           </div>
 

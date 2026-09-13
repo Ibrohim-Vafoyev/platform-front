@@ -1,3 +1,5 @@
+import { CheckIcon } from './Icons';
+
 export default function ModuleList({
   modules,
   activeModuleId,
@@ -59,7 +61,7 @@ export default function ModuleList({
           if (statusInfo.status === 'completed') {
             badgeClass = 'status-completed';
             badgeText = t.statusCompleted;
-            statusIcon = '✓';
+            statusIcon = <CheckIcon size={11} />;
           } else if (statusInfo.status === 'in_progress') {
             badgeClass = 'status-in-progress';
             badgeText = t.statusInProgress;
