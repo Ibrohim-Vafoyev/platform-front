@@ -1,4 +1,6 @@
 import { useState, useRef } from 'react';
+import { toPng } from 'html-to-image';
+import { jsPDF } from 'jspdf';
 
 export default function OnePagerView({
   project,
@@ -8,6 +10,7 @@ export default function OnePagerView({
   lang,
 }) {
   const [copied, setCopied] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const sheetRef = useRef(null);
 
   if (!project) {
@@ -49,9 +52,68 @@ export default function OnePagerView({
     });
   };
 
-  const handleDownloadPdf = () => {
-    // 100% reliable native browser PDF print dialog with print media styles
-    window.print();
+  const handleDownloadPdf = async () => {
+    if (!sheetRef.current || isGeneratingPdf) return;
+
+    try {
+      setIsGeneratingPdf(true);
+
+      const element = sheetRef.current;
+      const dataUrl = await toPng(element, {
+        quality: 0.95,
+        pixelRatio: 2,
+        backgroundColor: '#141a26',
+        filter: (node) => {
+          // Exclude edit buttons from exported PDF
+          return !node.classList?.contains('edit-section-link');
+        },
+      });
+
+      const img = new Image();
+      img.src = dataUrl;
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      const imgWidth = pdfWidth - 20; // 10mm margins on sides
+      const imgHeight = (img.height * imgWidth) / img.width;
+
+      let heightLeft = imgHeight;
+      let position = 10;
+
+      pdf.addImage(dataUrl, 'PNG', 10, position, imgWidth, imgHeight, '', 'FAST');
+      heightLeft -= (pdfHeight - 20);
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight + 10;
+        pdf.addPage();
+        pdf.addImage(dataUrl, 'PNG', 10, position, imgWidth, imgHeight, '', 'FAST');
+        heightLeft -= (pdfHeight - 20);
+      }
+
+      const cleanFileName = (project.name || 'Startup_OnePager')
+        .replace(/[^a-zA-Z0-9_\u0400-\u04FF\u0100-\u017F-]/g, '_');
+
+      // Direct automatic file download as .pdf
+      const pdfBlob = pdf.output('blob');
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = blobUrl;
+      downloadLink.download = `${cleanFileName}_OnePager.pdf`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch (err) {
+      console.error('Failed to download PDF:', err);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const localeMap = {
@@ -93,9 +155,10 @@ export default function OnePagerView({
             type="button"
             className="btn btn-primary btn-sm btn-pdf-export"
             onClick={handleDownloadPdf}
+            disabled={isGeneratingPdf}
             title={t.downloadPdf}
           >
-            {t.downloadPdf}
+            {isGeneratingPdf ? t.generatingPdf : t.downloadPdf}
           </button>
         </div>
       </div>
@@ -133,7 +196,6 @@ export default function OnePagerView({
                   <button
                     type="button"
                     className="edit-section-link"
-                    data-html2canvas-ignore="true"
                     onClick={() => onEditModule(mod.id)}
                     title={t.editSection}
                   >
@@ -152,7 +214,6 @@ export default function OnePagerView({
                     <button
                       type="button"
                       className="btn btn-primary btn-sm"
-                      data-html2canvas-ignore="true"
                       onClick={() => onEditModule(mod.id)}
                     >
                       {t.fillModuleBtn}
