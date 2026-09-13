@@ -5,6 +5,13 @@ export default function ModuleList({
   moduleStatuses,
   t,
 }) {
+  const completedModulesCount = modules.filter(
+    (m) => moduleStatuses[m.id]?.status === 'completed'
+  ).length;
+  const overallPercent = Math.round(
+    (completedModulesCount / (modules.length || 1)) * 100
+  );
+
   return (
     <aside className="module-list-panel">
       <div className="module-list-header">
@@ -15,6 +22,25 @@ export default function ModuleList({
       </div>
 
       <p className="module-list-subtitle">{t.modulesSubtitle}</p>
+
+      {/* Visual Progress Bar Section */}
+      <div className="module-panel-progress">
+        <div className="module-panel-progress-top">
+          <span className="progress-subhead">{t.readiness}</span>
+          <span className="progress-percent-highlight">{overallPercent}%</span>
+        </div>
+        <div className="overall-progress-track">
+          <div
+            className="overall-progress-fill"
+            style={{ width: `${overallPercent}%` }}
+          />
+        </div>
+        <div className="progress-subhead-foot">
+          <span>
+            {completedModulesCount} / {modules.length} {t.modulesCountSuffix} {t.statusCompleted.toLowerCase()}
+          </span>
+        </div>
+      </div>
 
       <div className="module-items">
         {modules.map((mod, index) => {
@@ -59,7 +85,7 @@ export default function ModuleList({
             >
               <div className="module-card-top">
                 <span className="module-index-badge">
-                  {t.moduleIndexPrefix} {index + 1}
+                  {t.moduleIndexPrefix} 0{index + 1}
                 </span>
                 <span className={`status-pill ${badgeClass}`}>
                   <span className="status-dot">{statusIcon}</span>
