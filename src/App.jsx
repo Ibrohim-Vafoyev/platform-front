@@ -1,122 +1,131 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState, useMemo } from 'react';
+import Header from './components/Header';
+import ModuleList from './components/ModuleList';
+import ModuleForm from './components/ModuleForm';
+import OnePagerView from './components/OnePagerView';
+import { INCUBATOR_MODULES } from './data/modules';
+import {
+  getStoredProjects,
+  getActiveProjectId,
+  setActiveProjectId,
+  updateProjectModuleAnswers,
+  createNewProject,
+  resetStorageToSeed,
+  getProjectProgress,
+} from './utils/storage';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [projects, setProjects] = useState(() => getStoredProjects());
+  const [activeProjectId, setActiveProjId] = useState(() =>
+    getActiveProjectId(projects)
+  );
+  const [activeTab, setActiveTab] = useState('modules'); // 'modules' | 'onepager'
+  const [activeModuleId, setActiveModuleId] = useState(INCUBATOR_MODULES[0].id);
+
+  // Active project memoized
+  const activeProject = useMemo(() => {
+    return projects.find((p) => p.id === activeProjectId) || projects[0] || null;
+  }, [projects, activeProjectId]);
+
+  // Progress metrics memoized
+  const progress = useMemo(() => {
+    return getProjectProgress(activeProject, INCUBATOR_MODULES);
+  }, [activeProject]);
+
+  // Active module configuration
+  const activeModule = useMemo(() => {
+    return (
+      INCUBATOR_MODULES.find((m) => m.id === activeModuleId) ||
+      INCUBATOR_MODULES[0]
+    );
+  }, [activeModuleId]);
+
+  // Active module saved answers
+  const activeModuleAnswers = useMemo(() => {
+    return activeProject?.answers?.[activeModule.id] || {};
+  }, [activeProject, activeModule.id]);
+
+  const handleSelectProject = (id) => {
+    setActiveProjId(id);
+    setActiveProjectId(id);
+  };
+
+  const handleCreateProject = (name, tagline) => {
+    const { updatedProjects, newProject } = createNewProject(name, tagline);
+    setProjects(updatedProjects);
+    setActiveProjId(newProject.id);
+    setActiveTab('modules');
+  };
+
+  const handleResetDemo = () => {
+    if (
+      window.confirm(
+        'Сбросить данные к исходным демо-проектам (AgroPulse AI и Черновик)? Все несохранённые изменения будут сброшены.'
+      )
+    ) {
+      const { projects: seedProjects, activeId } = resetStorageToSeed();
+      setProjects(seedProjects);
+      setActiveProjId(activeId);
+    }
+  };
+
+  const handleSaveModuleAnswers = (moduleId, fieldAnswers) => {
+    if (!activeProject) return;
+    const updated = updateProjectModuleAnswers(
+      activeProject.id,
+      moduleId,
+      fieldAnswers
+    );
+    setProjects(updated);
+  };
+
+  const handleEditModuleFromOnePager = (moduleId) => {
+    setActiveModuleId(moduleId);
+    setActiveTab('modules');
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app-layout">
+      <Header
+        projects={projects}
+        activeProject={activeProject}
+        onSelectProject={handleSelectProject}
+        onCreateProject={handleCreateProject}
+        onResetDemo={handleResetDemo}
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        progress={progress}
+      />
 
-      <div className="ticks"></div>
+      <main className="app-main-content">
+        {activeTab === 'modules' ? (
+          <div className="modules-view-container">
+            <ModuleList
+              modules={INCUBATOR_MODULES}
+              activeModuleId={activeModuleId}
+              onSelectModule={setActiveModuleId}
+              moduleStatuses={progress.moduleStatuses}
+            />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+            <section className="module-workspace">
+              <ModuleForm
+                key={`${activeProject?.id}_${activeModule.id}`}
+                module={activeModule}
+                currentAnswers={activeModuleAnswers}
+                onSave={handleSaveModuleAnswers}
+                onGoToOnePager={() => setActiveTab('onepager')}
+              />
+            </section>
+          </div>
+        ) : (
+          <OnePagerView
+            project={activeProject}
+            modules={INCUBATOR_MODULES}
+            onEditModule={handleEditModuleFromOnePager}
+          />
+        )}
+      </main>
+    </div>
+  );
 }
-
-export default App
