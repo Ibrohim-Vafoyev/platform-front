@@ -61,6 +61,120 @@ export const INCUBATOR_MODULES_CONFIG = [
       },
     ],
   },
+  {
+    id: 'solution_mvp',
+    title: {
+      uz: 'Yechim va MVP',
+      ru: 'Решение и MVP',
+      en: 'Solution & MVP',
+    },
+    subtitle: {
+      uz: 'Mahsulot qanday ishlashi, MVP bosqichi va texnologiyalar steki',
+      ru: 'Как ваш продукт решает проблему, стадия MVP и используемые технологии',
+      en: 'How the product solves the problem, MVP status, and technology stack',
+    },
+    fields: [
+      {
+        id: 'solution',
+        label: {
+          uz: 'Mahsulotingiz muammoni qanday hal qiladi?',
+          ru: 'Как ваш продукт решает проблему?',
+          en: 'How does your product solve the problem?',
+        },
+        placeholder: {
+          uz: 'Yechimingizning asosiy mexanizmini tasvirlab bering...',
+          ru: 'Опишите ключевую механику вашего решения...',
+          en: 'Describe the core mechanics of your solution...',
+        },
+        type: 'textarea',
+      },
+      {
+        id: 'mvp_status',
+        label: {
+          uz: 'Hozircha nima tayyor (MVP)?',
+          ru: 'Что уже реализовано (MVP)?',
+          en: "What's already built (MVP)?",
+        },
+        placeholder: {
+          uz: "Qaysi funksiyalar allaqachon tayyor va sinovdan o'tgan...",
+          ru: 'Какой функционал уже готов и протестирован...',
+          en: 'Which features are already working and tested...',
+        },
+        type: 'textarea',
+      },
+      {
+        id: 'tech_stack',
+        label: {
+          uz: 'Qanday texnologiyalardan foydalanilmoqda?',
+          ru: 'Какие технологии используются?',
+          en: 'What technologies are you using?',
+        },
+        placeholder: {
+          uz: 'Stek, vositalar, platformalar...',
+          ru: 'Стек, инструменты, платформы...',
+          en: 'Stack, tools, platforms...',
+        },
+        type: 'textarea',
+      },
+    ],
+  },
+  {
+    id: 'market_traction',
+    title: {
+      uz: 'Bozor va birinchi mijozlar',
+      ru: 'Рынок и первые клиенты',
+      en: 'Market & First Customers',
+    },
+    subtitle: {
+      uz: 'Bozor hajmini baholash, dastlabki traksiya va masshtablashtirish rejasi',
+      ru: 'Оценка объёма рынка, первые клиенты/пилоты и стратегия роста',
+      en: 'Market size estimation, early traction, and expansion strategy',
+    },
+    fields: [
+      {
+        id: 'market_size',
+        label: {
+          uz: 'Bozor hajmi qancha?',
+          ru: 'Какой размер рынка?',
+          en: "What's the market size?",
+        },
+        placeholder: {
+          uz: 'Bozor hajmini baholang (TAM/SAM/SOM yoki taxminiy raqam)...',
+          ru: 'Оцените объём рынка (TAM/SAM/SOM или примерная цифра)...',
+          en: "Estimate the market size (TAM/SAM/SOM or a rough figure)...",
+        },
+        type: 'textarea',
+      },
+      {
+        id: 'early_traction',
+        label: {
+          uz: 'Birinchi mijozlar yoki pilot loyihalar bormi?',
+          ru: 'Есть ли первые клиенты или пилоты?',
+          en: 'Do you have early customers or pilots?',
+        },
+        placeholder: {
+          uz: "Hozirgi trakstiyani (progress) tasvirlab bering, agar mavjud bo'lsa...",
+          ru: 'Опишите текущую тракцию, если есть...',
+          en: 'Describe your current traction, if any...',
+        },
+        type: 'textarea',
+      },
+      {
+        id: 'scaling_strategy',
+        label: {
+          uz: 'Kengayishni qanday rejalashtiryapsiz?',
+          ru: 'Как вы планируете масштабироваться?',
+          en: 'How do you plan to scale?',
+        },
+        placeholder: {
+          uz: "O'sish strategiyasi va yangi mijozlarga chiqish rejasi...",
+          ru: 'Стратегия роста и выхода на новых клиентов...',
+          en: 'Growth strategy and plan to reach new customers...',
+        },
+        type: 'textarea',
+      },
+    ],
+  },
 ];
 
 /**

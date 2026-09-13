@@ -46,6 +46,22 @@ export const SEED_PROJECTS = [
         current_solutions:
           'Используют ручной замер влажности механическим щупом 1-2 раза в неделю, субъективную оценку агронома «на глаз» и усреднённые метеорологические сводки без учёта микрозон.',
       },
+      solution_mvp: {
+        solution:
+          'Мы устанавливаем автономные беспроводные датчики влажности и температуры почвы с передачей данных по LoRaWAN, а мобильное приложение AgroPulse в реальном времени рассчитывает точный график капельного полива на основе данных датчиков и AI-модели.',
+        mvp_status:
+          'Разработан работающий аппаратный прототип сенсорного зонда и мобильное приложение для iOS/Android. Проведено тестирование на 3 экспериментальных участках черешневого сада (15 га).',
+        tech_stack:
+          'Hardware: ESP32 + LoRaWAN + сенсоры NPK/влажности; Cloud: Node.js, TimescaleDB; Mobile: React Native; AI: Python, CatBoost для прогноза влагопотери.',
+      },
+      market_traction: {
+        market_size:
+          'TAM: $1.2B (рынок умного орошения в странах СНГ и Ближнего Востока). SAM: $180M (Центральная Азия). SOM: $12M (коммерческие сады и виноградники Узбекистана и Казахстана в первые 3 года).',
+        early_traction:
+          'Подписаны 2 оплачиваемых пилотных соглашения с фермерскими хозяйствами в Самаркандской и Ташкентской областях на 40 га. Собраны положительные отзывы: экономия воды составила 28% за первый сезон.',
+        scaling_strategy:
+          'Прямые B2B-продажи агрохолдингам через дистрибьюторов капельного орошения, подписочная модель SaaS ($25/га в год) + продажа оборудования с маржой 35%.',
+      },
     },
   },
   {
@@ -74,6 +90,30 @@ export function getStoredProjects() {
       localStorage.setItem(STORAGE_KEY_PROJECTS, JSON.stringify(SEED_PROJECTS));
       return SEED_PROJECTS;
     }
+
+    // Seamlessly upgrade AgroPulse AI demo project if missing new module seed answers
+    let needsUpdate = false;
+    const upgraded = parsed.map((p) => {
+      if (p.id === 'proj_agropulse' && (!p.answers?.solution_mvp || !p.answers?.market_traction)) {
+        needsUpdate = true;
+        return {
+          ...p,
+          answers: {
+            ...SEED_PROJECTS[0].answers,
+            ...(p.answers || {}),
+            solution_mvp: p.answers?.solution_mvp || SEED_PROJECTS[0].answers.solution_mvp,
+            market_traction: p.answers?.market_traction || SEED_PROJECTS[0].answers.market_traction,
+          },
+        };
+      }
+      return p;
+    });
+
+    if (needsUpdate) {
+      saveStoredProjects(upgraded);
+      return upgraded;
+    }
+
     return parsed;
   } catch (err) {
     console.error('Failed to read projects from localStorage:', err);
