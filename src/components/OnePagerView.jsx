@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export default function OnePagerView({
   project,
@@ -8,6 +10,8 @@ export default function OnePagerView({
   lang,
 }) {
   const [copied, setCopied] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const sheetRef = useRef(null);
 
   if (!project) {
     return (
@@ -48,6 +52,54 @@ export default function OnePagerView({
     });
   };
 
+  const handleDownloadPdf = async () => {
+    if (!sheetRef.current || isGeneratingPdf) return;
+
+    try {
+      setIsGeneratingPdf(true);
+
+      const element = sheetRef.current;
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#141a26',
+        windowWidth: 1200,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      const imgWidth = pdfWidth - 20; // 10mm margins on each side
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 10; // top margin
+
+      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight, '', 'FAST');
+      heightLeft -= (pdfHeight - 20);
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight + 10;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight, '', 'FAST');
+        heightLeft -= (pdfHeight - 20);
+      }
+
+      const cleanFileName = (project.name || 'Startup_OnePager')
+        .replace(/[^a-zA-Z0-9_\u0400-\u04FF\u0100-\u017F-]/g, '_');
+      pdf.save(`${cleanFileName}_OnePager.pdf`);
+    } catch (err) {
+      console.error('Failed to generate PDF with html2canvas:', err);
+      // Rock-solid fallback to window.print() if html2canvas ever encounters an unexpected error
+      window.print();
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   const localeMap = {
     uz: 'uz-UZ',
     ru: 'ru-RU',
@@ -78,13 +130,24 @@ export default function OnePagerView({
             type="button"
             className="btn btn-secondary btn-sm"
             onClick={handleCopyText}
+            title={t.copyOnePager}
           >
             {copied ? t.copiedSuccess : t.copyOnePager}
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-primary btn-sm btn-pdf-export"
+            onClick={handleDownloadPdf}
+            disabled={isGeneratingPdf}
+            title={t.downloadPdf}
+          >
+            {isGeneratingPdf ? t.generatingPdf : t.downloadPdf}
           </button>
         </div>
       </div>
 
-      <article className="onepager-sheet">
+      <article className="onepager-sheet" ref={sheetRef}>
         <header className="onepager-header">
           <div className="onepager-header-top">
             <span className="memo-tag">{t.executiveTag}</span>
@@ -117,6 +180,7 @@ export default function OnePagerView({
                   <button
                     type="button"
                     className="edit-section-link"
+                    data-html2canvas-ignore="true"
                     onClick={() => onEditModule(mod.id)}
                     title={t.editSection}
                   >
@@ -135,6 +199,7 @@ export default function OnePagerView({
                     <button
                       type="button"
                       className="btn btn-primary btn-sm"
+                      data-html2canvas-ignore="true"
                       onClick={() => onEditModule(mod.id)}
                     >
                       {t.fillModuleBtn}
